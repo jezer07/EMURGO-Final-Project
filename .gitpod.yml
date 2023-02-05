@@ -2,7 +2,7 @@ image:
   file: .gitpod.Dockerfile
 tasks:
   - init:
-
+      cabal repl
 vscode:
   extensions:
     - haskell.haskell
