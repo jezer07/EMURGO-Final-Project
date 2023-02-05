@@ -4,6 +4,9 @@ This repository contains a preconfigured Haskell development environment, allowi
 
 The environment contains a skeleton for a simple Haskell project, designed as a starter for the solo project of EMURGO Academy's Haskell course.
 
+## Launch in Gitpod
+https://gitpod.io/#https://github.com/jezer07/EMURGO-Final-Project
+
 ## Create Your Environment
 
 1. Fork this repository
