@@ -24,7 +24,7 @@ executable jezer-final-project
                     , Types
 
     build-depends:
-        base ^>=4.15.0.0,
+        base ^>=4.14.1.0,
         random
 
     hs-source-dirs:   app, src
