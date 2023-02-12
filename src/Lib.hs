@@ -10,7 +10,7 @@ _SIZE_OF_BOARD_ = 7
 
 _TOTAL_SQUARES_ = _SIZE_OF_BOARD_ * _SIZE_OF_BOARD_
 
-_TOTAL_BOMBS_ = round $ fromIntegral _TOTAL_SQUARES_ * 0.3
+_TOTAL_BOMBS_ = round $ fromIntegral _TOTAL_SQUARES_ * 0.15
 
 _RANGE_ = [0 .. _SIZE_OF_BOARD_ -1]
 
@@ -52,7 +52,7 @@ initRow :: Row
 initRow = replicate _SIZE_OF_BOARD_ Good {value = 0, showing = True}
 
 initBoard :: Bombs -> Board
-initBoard b = initBombNeighbors b $ plantBombs b (replicate _SIZE_OF_BOARD_ initRow)
+initBoard b = initBombNeighbors b . plantBombs b $ replicate _SIZE_OF_BOARD_ initRow
 
 plantBombs :: Bombs -> Board -> Board
 plantBombs bombs board = foldl (\b (r, c) -> updateBoard (r, c) Bomb {showing = True} b) board bombs
@@ -60,31 +60,31 @@ plantBombs bombs board = foldl (\b (r, c) -> updateBoard (r, c) Bomb {showing = 
 initBombNeighbors :: Bombs -> Board -> Board
 initBombNeighbors [] board = board
 initBombNeighbors bombs board = foldr updateNeighbor board (concatMap getBombsNeighbors bombs)
-    where
-      updateNeighbor :: (Int, Int) -> Board -> Board
-      updateNeighbor (r, c) board =
-        if r < 0 || r >= _SIZE_OF_BOARD_ || c < 0 || c >= _SIZE_OF_BOARD_
-          then board
-          else updateBoard (r, c) (addValueToSquare (board !! r !! c)) board
+  where
+    updateNeighbor :: (Int, Int) -> Board -> Board
+    updateNeighbor (r, c) board =
+      if r < 0 || r >= _SIZE_OF_BOARD_ || c < 0 || c >= _SIZE_OF_BOARD_
+        then board
+        else updateBoard (r, c) (addValueToSquare (board !! r !! c)) board
 
-      addValueToSquare :: Square -> Square
-      addValueToSquare (Bomb a) = Bomb a
-      addValueToSquare (Good v s) = Good (v + 1) s
-      addValueToSquare Flagged = Flagged
+    addValueToSquare :: Square -> Square
+    addValueToSquare (Bomb a) = Bomb a
+    addValueToSquare (Good v s) = Good (v + 1) s
+    addValueToSquare Flagged = Flagged
 
-      getBombsNeighbors :: Bomb -> [(Int, Int)]
-      getBombsNeighbors (r, c) =
-        filter
-          (\(r, c) -> r >= 0 && r < _SIZE_OF_BOARD_ && c >= 0 && c < _SIZE_OF_BOARD_)
-          [ (r - 1, c - 1),
-            (r - 1, c),
-            (r - 1, c + 1),
-            (r, c - 1),
-            (r, c + 1),
-            (r + 1, c - 1),
-            (r + 1, c),
-            (r + 1, c + 1)
-          ]
+    getBombsNeighbors :: Bomb -> [(Int, Int)]
+    getBombsNeighbors (r, c) =
+      filter
+        (\(r, c) -> r >= 0 && r < _SIZE_OF_BOARD_ && c >= 0 && c < _SIZE_OF_BOARD_)
+        [ (r - 1, c - 1),
+          (r - 1, c),
+          (r - 1, c + 1),
+          (r, c - 1),
+          (r, c + 1),
+          (r + 1, c - 1),
+          (r + 1, c),
+          (r + 1, c + 1)
+        ]
 
 updateBoard :: Move -> Square -> Board -> Board
 updateBoard (r, c) square board = board & element r . element c .~ square
