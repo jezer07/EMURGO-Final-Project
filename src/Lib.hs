@@ -49,17 +49,17 @@ getBombsIndexes :: [Int] -> [Int] -> Bombs
 getBombsIndexes = zip
 
 initRow :: Row
-initRow = replicate _SIZE_OF_BOARD_ Good {value = 0, showing = True}
+initRow = replicate _SIZE_OF_BOARD_ Good {value = 0, showing = False}
 
 initBoard :: Bombs -> Board
 initBoard b = initBombNeighbors b . plantBombs b $ replicate _SIZE_OF_BOARD_ initRow
 
 plantBombs :: Bombs -> Board -> Board
-plantBombs bombs board = foldl (\b (r, c) -> updateBoard (r, c) Bomb {showing = True} b) board bombs
+plantBombs bombs board = foldl (\b (r, c) -> updateBoard (r, c) Bomb {showing = False} b) board bombs
 
 initBombNeighbors :: Bombs -> Board -> Board
 initBombNeighbors [] board = board
-initBombNeighbors bombs board = foldr updateNeighbor board (concatMap getBombsNeighbors bombs)
+initBombNeighbors bombs board = foldr updateNeighbor board (concatMap getNeighbors bombs)
   where
     updateNeighbor :: (Int, Int) -> Board -> Board
     updateNeighbor (r, c) board =
@@ -72,28 +72,46 @@ initBombNeighbors bombs board = foldr updateNeighbor board (concatMap getBombsNe
     addValueToSquare (Good v s) = Good (v + 1) s
     addValueToSquare Flagged = Flagged
 
-    getBombsNeighbors :: Bomb -> [(Int, Int)]
-    getBombsNeighbors (r, c) =
-      filter
-        (\(r, c) -> r >= 0 && r < _SIZE_OF_BOARD_ && c >= 0 && c < _SIZE_OF_BOARD_)
-        [ (r - 1, c - 1),
-          (r - 1, c),
-          (r - 1, c + 1),
-          (r, c - 1),
-          (r, c + 1),
-          (r + 1, c - 1),
-          (r + 1, c),
-          (r + 1, c + 1)
-        ]
-
 updateBoard :: Move -> Square -> Board -> Board
 updateBoard (r, c) square board = board & element r . element c .~ square
 
-flagSquare :: Move -> Bombs -> Board -> Either (Board, GameException) Board
-flagSquare (r, c) bombs board =
-  if board !! r !! c == Good {value = 0, showing = False}
-    then Right (updateBoard (r, c) Flagged board)
-    else Left (updateBoard (r, c) Flagged board, InvalidMove)
-
 revealBombs :: Board -> Bombs -> Board
 revealBombs = foldl (\b (r, c) -> updateBoard (r, c) Bomb {showing = False} b)
+
+openSquare :: Move -> Board ->  Board
+openSquare (r, c) board
+  | square == Flagged = board
+  | square == Bomb {showing = True} = board
+  | showing square = board
+  | value square > 0 = updateBoard (r, c) (square {showing = True}) board 
+  | otherwise =  updateBoard (r, c) (square {showing = True}) board `openNeighbors` getNeighbors (r, c)
+  where square = board !! r !! c
+
+openNeighbors:: Board -> Neighbors -> Board
+openNeighbors board [] = board
+openNeighbors board neighbors = foldr (\n b -> openSquare (fst n, snd n) b) board neighbors
+    where
+        square:: Neighbor -> Square
+        square n = board !! fst n !! snd n
+
+
+isValidSquareToOpenAutomatically:: Square -> Bool
+isValidSquareToOpenAutomatically square = square /= Flagged && square /= Bomb {showing = True} && square /= Bomb {showing = False}
+
+
+isWithinBounds:: Move -> Bool
+isWithinBounds (r, c) = r >= 0 && r < _SIZE_OF_BOARD_ && c >= 0 && c < _SIZE_OF_BOARD_
+
+getNeighbors:: Neighbor -> Neighbors
+getNeighbors (r, c) =
+  filter
+    (\(r, c) -> isWithinBounds (r, c))
+    [ (r - 1, c - 1),
+      (r - 1, c),
+      (r - 1, c + 1),
+      (r, c - 1),
+      (r, c + 1),
+      (r + 1, c - 1),
+      (r + 1, c),
+      (r + 1, c + 1)
+    ]

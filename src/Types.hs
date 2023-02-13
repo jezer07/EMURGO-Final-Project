@@ -25,3 +25,7 @@ type Bomb = (Int, Int)
 type Bombs = [Bomb]
 
 type Move = (Int, Int)
+
+type Neighbor = (Int, Int)
+
+type Neighbors = [Neighbor]
