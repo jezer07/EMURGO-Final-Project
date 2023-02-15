@@ -46,7 +46,7 @@ playGameLoop = do
               put (GameState newBoard bombs stillPlaying)
               if checkIfWon newBoard bombs then do
                   liftIO $ printBoard newBoard
-                  liftIO $ putStrLn "====================== Congratulations You won!!!======================"
+                  liftIO $ putStrLn "====================== Congratulations You've Won!!! ======================"
                   put (GameState newBoard bombs False)
               else
                 playGameLoop
