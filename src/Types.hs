@@ -1,20 +1,19 @@
 module Types where
 
-data Square = Bomb {showing :: Bool} | Flagged | Good {value :: Int, showing :: Bool} deriving (Eq)
+data Square = Bomb {showing :: Bool, flagged:: Bool} | Tile {value :: Int, showing :: Bool, flagged:: Bool} deriving (Eq)
 
-instance Show Square where
-  show (Bomb showing) = if showing then "B" else "_"
-  show Flagged = "F"
-  show (Good v s)
-    | s = show v --if v > 0 then show v else " "
-    | otherwise = "_"
+data Command = Flag | Open | Invalid deriving (Show, Eq)
+
+
 
 data GameState = GameState
-  { board :: Board,
-    gameException :: GameException
+  { 
+    board :: Board,
+    bombs :: Bombs,
+    stillPlaying :: Bool
   }
 
-data GameException = None | GameOver | GameWon | InvalidMove deriving (Show, Eq)
+data GameException = None | GameOver | InvalidMove deriving (Eq)
 
 type Row = [Square]
 
@@ -29,3 +28,19 @@ type Move = (Int, Int)
 type Neighbor = (Int, Int)
 
 type Neighbors = [Neighbor]
+
+instance Show Square where
+  show (Bomb showing flagged) 
+    | showing = "B"
+    | flagged = "F"
+    | otherwise = "_"
+
+  show (Tile v s f)
+    | s = show v --if v > 0 then show v else " "
+    | f = "F"
+    | otherwise = "_"
+
+instance Show GameException where
+  show None = "None"
+  show GameOver = "You've opened up a Bomb! Game over!"
+  show InvalidMove = "Invalid move"
