@@ -18,6 +18,12 @@ _HEADER_ = ' ' : formatLine (showInts _RANGE_)
 
 _SEP_ = ['_', '|', '_']
 
+_LOGO_PATH_ :: FilePath
+_LOGO_PATH_ = "./assets/logo.txt"
+
+printLogo:: IO ()
+printLogo =  readFile _LOGO_PATH_ >>= putStrLn
+
 formatLine :: [String] -> String
 formatLine x = _SEP_ ++ intercalate _SEP_ x ++ _SEP_
 

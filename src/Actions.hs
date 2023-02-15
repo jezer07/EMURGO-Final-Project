@@ -8,9 +8,8 @@ startGame = do
   y <- generateRandomList
   let bombs = removeDuplicates (getBombsIndexes x y)
   let board = initBoard bombs
+  printLogo
   printBoard board
-  let newBoard = openSquare (3,3) board
-  printBoard newBoard
                                  
 
 printBoard:: Board -> IO ()
