@@ -9,7 +9,7 @@ import System.Random
 import Types
 import Data.Char (toUpper, digitToInt)
 
-_SIZE_OF_BOARD_ = 7
+_SIZE_OF_BOARD_ = 5
 
 _TOTAL_SQUARES_ = _SIZE_OF_BOARD_ * _SIZE_OF_BOARD_
 
@@ -130,17 +130,42 @@ flagSquare (r, c) board
   | otherwise = Right $ updateBoard (r, c) (square {flagged = not $ flagged square}) board
   where square = board !! r !! c
 
+
 openSquare:: Move -> Board ->  Either (GameException, Board) Board
-openSquare (r, c) board
+openSquare (r, c) board = if not $ isWithinBounds (r, c) 
+  then Left (InvalidMove, board) 
+  else case square of
+    Tile _ _ True -> Left (InvalidMove, board)
+    Tile _ True _ -> Left (InvalidMove, board)
+    Bomb _ True -> Left (InvalidMove, board)
+    Bomb _ _ -> Left (GameOver, board)
+    Tile {}  -> Right $ openSquareRecursive (r, c) board
+  where square = board !! r !! c
+
+openSquare' :: Move -> Board ->  Either (GameException, Board) Board
+openSquare'  (r, c) board
   | not $ isWithinBounds (r, c) = Left (InvalidMove, board)
   | square == Tile (value square) (showing square) True = Left (InvalidMove, board)
   | square == Bomb {showing = False, flagged = False} = Left (GameOver, board)
   | square == Bomb {showing = False, flagged = True} = Left (InvalidMove, board)
   | otherwise = Right $ openSquareRecursive (r, c) board
   where square = board !! r !! c
+  
+openSquareRecursive :: Move -> Board ->  Board  
+openSquareRecursive (r,c) board = case square of
+  Tile _ _ True -> board
+  Tile _ True _ -> board
+  Bomb _ _ -> board
+  Tile value _ _  -> if value > 0 
+                     then updatedBoard
+                     else updatedBoard `openNeighbors` getNeighbors (r, c)
+  where 
+    square = board !! r !! c
+    updatedBoard = updateBoard (r, c) (square {showing = True}) board
 
-openSquareRecursive :: Move -> Board ->  Board
-openSquareRecursive (r, c) board
+
+openSquareRecursive' :: Move -> Board ->  Board
+openSquareRecursive' (r, c) board
   | square == Tile (value square) (showing square) True = board
   | square == Bomb {showing = False, flagged = False} = board
   | square == Bomb {showing = False, flagged = True} = board
